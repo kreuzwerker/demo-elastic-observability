@@ -1,0 +1,37 @@
+metricbeat.autodiscover:
+    providers:
+        - type: docker
+          hints.enabled: true
+
+metricbeat.modules:
+- module: docker
+  metricsets: ["container", "cpu", "diskio", "healthcheck", "info", "memory", "network"]
+  hosts: ["unix:///var/run/docker.sock"]
+  period: 10s
+  enabled: true
+  
+processors:
+- add_docker_metadata:
+    host: "unix:///var/run/docker.sock"
+- drop_fields:
+    fields: [ "mongodb.replstatus.server_date", "mongodb.status", "mssql.transaction_log.stats.backup_time", "php_fpm.pool.start_time", "php_fpm.process.start_time", "postgresql.activity", "postgresql.bgwriter.stats_reset", "postgresql.database.stats_reset", "kubernetes" ]
+    ignore_missing: false
+- copy_fields:
+    fields:
+        - from: docker.container.labels.com_docker_compose_service
+          to: app.name
+    fail_on_error: false
+    ignore_missing: true
+
+output.elasticsearch:
+    hosts: ["http://elasticsearch:9200"]
+  
+setup.dashboards.enabled: true
+setup.template.enabled: true
+setup.kibana.host: "http://kibana:5601"
+  
+logging.to_files: false
+
+xpack.monitoring:
+    enabled: true
+    elasticsearch: ~

@@ -1,0 +1,54 @@
+apm-server:
+  host: "apm-server:8200"
+  frontend.enabled=true
+  frontend.rate_limit=100000
+  host=apm-server:8200
+  read_timeout=1m
+  shutdown_timeout=2m
+  write_timeout=1m
+  rum.enabled=true
+
+setup.kibana:
+  host: "kibana:5601"
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  indices:
+    - index: "apm-%{[beat.version]}-sourcemap"
+      when.contains:
+        processor.event: "sourcemap"
+    - index: "apm-%{[beat.version]}-error-%{+yyyy.MM.dd}"
+      when.contains:
+        processor.event: "error"
+    - index: "apm-%{[beat.version]}-transaction-%{+yyyy.MM.dd}"
+      when.contains:
+        processor.event: "transaction"
+    - index: "apm-%{[beat.version]}-span-%{+yyyy.MM.dd}"
+      when.contains:
+        processor.event: "span"
+  
+  apm-server.rum.enabled: true
+  apm-server.rum.event_rate.limit: 300
+  apm-server.rum.event_rate.lru_size: 1000
+  apm-server.rum.allow_origins: ['*']
+  apm-server.rum.library_pattern: "node_modules|bower_components|~"
+  apm-server.rum.exclude_from_grouping: "^/webpack"
+  apm-server.rum.source_mapping.cache.expiration: 5m
+  apm-server.rum.source_mapping.index_pattern: "apm-*-sourcemap*"
+
+
+
+server.kibana.host=kibana:5601
+  -E apm-server.kibana.protocol=http
+  -E monitoring.enabled=true
+  -E output.elasticsearch.hosts=elasticsearch:9200
+  -E setup.template.enabled=true
+  -E setup.template.overwrite=true
+  -E apm-server.frontend.enable=true
+  -E apm-server.frontend.rate_limit=10000
+  -E apm-server.read_timeout=1m
+  -E apm-server.shutdown_timeout=2m
+  -E apm-server.write_timeout=1m
+  -E logging.metrics.enabled=true
+  -E logging.metrics.enabled=true
+  -E ilm.enabled=true

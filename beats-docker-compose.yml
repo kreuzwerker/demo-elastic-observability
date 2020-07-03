@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+    filebeat:
+        image: docker.elastic.co/beats/filebeat:7.8.0
+        container_name: xw-filebeat
+        user: root # To read the docker socket
+        volumes:
+            - ./docker-compose/filebeat/up.sh:/usr/share/filebeat/up.sh:ro
+            - ./docker-compose/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+            # Bind-mount the Docker daemon to enable add_docker_metadata from within the container
+            - /var/lib/docker:/var/lib/docker:ro
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        command: ['/bin/sh', '-c', 'cat /usr/share/filebeat/up.sh | tr -d "\r" | sh']
+        networks:
+            - xw-stack-net
+    metricbeat:
+        image: docker.elastic.co/beats/metricbeat:7.8.0
+        container_name: xw-metricbeat
+        user: root # To read the docker socket
+        volumes:
+            - ./docker-compose/metricbeat/up.sh:/usr/share/metricbeat/up.sh:ro
+            - ./docker-compose/metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+            # Monitor the Docker host rather than the Metricbeat container; these are used by the system module
+            - /proc:/hostfs/proc:ro
+            - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+            - /:/hostfs:ro
+            # Bind-mount the Docker daemon to enable add_docker_metadata from within the container
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        command: ['/bin/sh', '-c', 'cat /usr/share/metricbeat/up.sh | tr -d "\r" | sh']
+        networks:
+            - xw-stack-net
+    
+networks:
+    xw-stack-net:
