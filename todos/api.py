@@ -1,11 +1,14 @@
 from fastapi import FastAPI
 from typing import Optional
 from pydantic import BaseModel
+from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
 import redisrepo as repo
 import logger
 
 log = logger.getLogger("api")
+elasticapm = make_apm_client({})
 app = FastAPI()
+app.add_middleware(ElasticAPM, client=elasticapm)
 
 class Todo(BaseModel):
     id: str
