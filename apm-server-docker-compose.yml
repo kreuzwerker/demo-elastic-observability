@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+    apm-server:
+        image: docker.elastic.co/apm/apm-server:7.8.0
+        container_name: xw-apm-server
+        ports:
+            - "8200:8200"
+            - "6060:6060"
+        environment:
+            - apm-server.frontend.enabled=true
+            - apm-server.host="0.0.0.0:8200"
+            - apm-server.read_timeout=1m
+            - apm-server.shutdown_timeout=2m
+            - apm-server.write_timeout=1m
+            - output.elasticsearch.hosts=['http://elasticsearch:9200']
+            - setup.kibana.host="kibana:5601"
+            - setup.template.enabled=true
+            - logging.to_files=false
+            - xpack.monitoring.elasticsearch=true
+        networks:
+            - xw-stack-net
+
+networks:
+    xw-stack-net:
