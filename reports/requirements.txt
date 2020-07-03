@@ -3,3 +3,4 @@ uvicorn
 fpdf
 aiofiles
 requests
+elastic-apm

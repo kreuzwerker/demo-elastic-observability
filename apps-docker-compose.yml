@@ -12,6 +12,10 @@ services:
     xw-app-todos:
         build: ./todos
         container_name: xw-app-todos
+        environment:
+            - ELASTIC_APM_ENABLED=${ELASTIC_APM_ENABLED}
+            - ELASTIC_APM_SERVICE_NAME=xw-app-todos
+            - ELASTIC_APM_SERVER_URL=http://apm-server:8200
         command: uvicorn api:app --host 0.0.0.0 --port 5057
         ports:
             - "5057:5057"
@@ -22,6 +26,10 @@ services:
     xw-app-reports:
         build: ./reports
         container_name: xw-app-reports
+        environment:
+            - ELASTIC_APM_ENABLED=${ELASTIC_APM_ENABLED}
+            - ELASTIC_APM_SERVICE_NAME=xw-app-reports
+            - ELASTIC_APM_SERVER_URL=http://apm-server:8200
         command: uvicorn api:app --host 0.0.0.0 --port 5058
         ports:
             - "5058:5058"

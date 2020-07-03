@@ -8,32 +8,42 @@ The demo environment consists of:
     - the `xw-reports` app allows to download a PDF summary of all todos, fetched via a REST call from `xw-todos`.
 - a one-node `Elasticsearch` cluster
 - a single instance of `Kibana`, connected to the Elasticsearch cluster
-- two running Beats to collect observability data from the backend: a `Filebeat` module to crawl and fetch logs, and a `Metricbeat` module to collect performance metrics regularly.
+- two running Beats to collect observability data from the backend: a `Filebeat` module to crawl and fetch logs, and a `Metricbeat` module to collect performance metrics regularly
+- an Elastic APM Server that collects traces shipped by the APM Agents deployed on the backend apps 
 
 The diagram below displays the overall architecture of the demo environment.
-![Architecture Diagram](./docs/demo-observability-elastic-diagram.png)
+
+![Architecture Diagram](./docs/demo-observability-elastic-with-apm-diagram.png)
 
 ## How to run the demo
 All components of the demo environment run in Docker containers, in the same virtual Docker network. One can spin up the whole environment using docker compose.
 
-To deploy the two web apps and the single Redis instance: 
+#### To deploy the two web apps and the single Redis instance: 
 ```
 docker-compose -f path/to/this/repo/apps-docker-compose.yml up
 ```
 
-To deploy the Elasticsearch cluster and the Kibana instance:
+#### To deploy the Elasticsearch cluster and the Kibana instance:
 ```
 docker-compose -f path/to/this/repo/elasticsearch-docker-compose.yml up
 ```
 
-To deploy the two Beats modules:
+#### To deploy the two Beats modules:
 ```
 docker-compose -f path/to/this/repo/beats-docker-compose.yml up
 ```
 
-To deploy everything at once, well:
+#### To deploy the APM server and enable the APM agents on the apps:
 ```
-docker-compose -f path/to/this/repo/apps-docker-compose.yml -f path/to/this/repo/elasticsearch-docker-compose.yml -f path/to/this/repo/beats-docker-compose.yml up
+echo ELASTIC_APM_ENABLED=true > .env
+docker-compose -f path/to/this/repo/apm-server-docker-compose.yml up
+```
+(to disable the APM agents again: ```echo ELASTIC_APM_ENABLED=false```)
+
+#### To deploy everything at once, well:
+```
+echo ELASTIC_APM_ENABLED=true > .env
+docker-compose -f path/to/this/repo/apps-docker-compose.yml -f path/to/this/repo/elasticsearch-docker-compose.yml -f path/to/this/repo/beats-docker-compose.yml -f path/to/this/repo/apm-server-docker-compose.yml up
 ```
 
 ## Apps' API Documentation
