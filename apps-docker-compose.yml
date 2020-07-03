@@ -1,0 +1,34 @@
+version: '3'
+services:
+    xw-redis:
+        image: redis:6.0.5-alpine
+        container_name: xw-redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - ./redis:/data
+        networks:
+            - xw-stack-net
+    xw-app-todos:
+        build: ./todos
+        container_name: xw-app-todos
+        command: uvicorn api:app --host 0.0.0.0 --port 5057
+        ports:
+            - "5057:5057"
+        depends_on:
+            - xw-redis
+        networks:
+            - xw-stack-net
+    xw-app-reports:
+        build: ./reports
+        container_name: xw-app-reports
+        command: uvicorn api:app --host 0.0.0.0 --port 5058
+        ports:
+            - "5058:5058"
+        depends_on:
+            - xw-app-todos
+        networks:
+            - xw-stack-net
+
+networks:
+    xw-stack-net:
