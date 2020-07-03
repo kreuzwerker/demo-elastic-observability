@@ -1,16 +1,17 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fpdf import FPDF
+from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
 import json
-import requests
 import logger
-
-log = logger.getLogger("api")
+import requests
 
 ## init ##
+log = logger.getLogger("api")
+elasticapm = make_apm_client({})
 app = FastAPI()
+app.add_middleware(ElasticAPM, client=elasticapm)
 
-## ## 
 class PDF(FPDF):
     REPORT_FULLNAME = "/home/reports/todos.pdf"
 
