@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from typing import Optional
 from pydantic import BaseModel
 from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
+import json
 import redisrepo as repo
 import logger
 
@@ -26,41 +27,46 @@ def hello():
 def get_todos(showAll: bool = False):
     """Get all the todos object"""
     log.debug("Request: GET '/todos/'")
-    resp = repo.find_all(showAll)
-    return resp
+    return repo.find_all(showAll)
 
 @app.get('/todos/{id}', status_code=200)
 def get_todo(id: str):
     """Get the todo object from Redis"""
     log.debug("Request: GET '/todos/{0}'".format(id))
-    resp = repo.find_by_id(id)
-    return resp
+    return _find_todo_by_id(id)
 
 @app.get('/todos/{id}/done', status_code=200)
 def set_as_done(id: str):
     """Set the requested todo as done"""
     log.debug("Request: GET '/todos/{0}/done'".format(id))
-    resp = _change_todo_status(id, isDone=True)
-    return resp
+    return _update_todo_status(id, isDone=True)
 
 @app.get('/todos/{id}/undone', status_code=200)
 def set_as_not_done(id: str):
     """Set the requested todo as not done"""
     log.debug("Request: GET '/todos/{0}/undone'".format(id))
-    resp = _change_todo_status(id, isDone=False)
-    return resp
+    return _update_todo_status(id, isDone=False)
 
 @app.post('/todos/', status_code=200)
 def add_todo(todo: Todo):
     """Store the request body into Redis"""
     log.debug("Request: POST '/todos/' ; Id: {0}".format(todo.id))
-    resp = repo.save(todo.id, todo.__dict__)
-    return resp
+    return _save_todo(todo.__dict__)
 
 # ---
-def _change_todo_status(id: str, isDone: bool):
-    todo_resp = repo.find_by_id(id)
-    if not isinstance(todo_resp, dict):
-        return todo_resp
-    todo_resp["isDone"] = isDone
-    return repo.save(id, todo_resp)
+def _find_todo_by_id(id: str):
+    resp = repo.find_by_id(id)
+    if not resp:
+        raise HTTPException(status_code=404, detail="Todo with id {0} not found".format(id))
+    return resp
+
+def _update_todo_status(id: str, isDone: bool):
+    todo = _find_todo_by_id(id)
+    todo["isDone"] = isDone
+    return _save_todo(todo)
+
+def _save_todo(todo):
+    resp = repo.save(todo["id"], todo)
+    if not resp:
+        raise HTTPException(status_code=500, detail="Error while saving the todo: {0}".format(json.dumps(todo)))
+    return resp
