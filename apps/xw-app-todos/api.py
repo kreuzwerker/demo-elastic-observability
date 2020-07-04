@@ -5,6 +5,7 @@ from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
 import redisrepo as repo
 import logger
 
+# --- init
 log = logger.getLogger("api")
 elasticapm = make_apm_client({})
 app = FastAPI()
@@ -15,14 +16,7 @@ class Todo(BaseModel):
     description: str
     isDone: Optional[bool] = False
 
-def _change_todo_status(id: str, isDone: bool):
-    todo_resp = repo.find_by_id(id)
-    if not isinstance(todo_resp, dict):
-        return todo_resp
-    todo_resp["isDone"] = isDone
-    return repo.save(id, todo_resp)
-
-## REST Endpoints ##
+# --- requests mapping
 @app.get('/')
 def hello():
     """Greetings"""
@@ -63,3 +57,10 @@ def add_todo(todo: Todo):
     resp = repo.save(todo.id, todo.__dict__)
     return resp
 
+# ---
+def _change_todo_status(id: str, isDone: bool):
+    todo_resp = repo.find_by_id(id)
+    if not isinstance(todo_resp, dict):
+        return todo_resp
+    todo_resp["isDone"] = isDone
+    return repo.save(id, todo_resp)
