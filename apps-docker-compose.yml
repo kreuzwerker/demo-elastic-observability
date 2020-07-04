@@ -10,7 +10,7 @@ services:
         networks:
             - xw-stack-net
     xw-app-todos:
-        build: ./todos
+        build: ./apps/xw-app-todos
         container_name: xw-app-todos
         environment:
             - ELASTIC_APM_ENABLED=${ELASTIC_APM_ENABLED}
@@ -24,7 +24,7 @@ services:
         networks:
             - xw-stack-net
     xw-app-reports:
-        build: ./reports
+        build: ./apps/xw-app-reports
         container_name: xw-app-reports
         environment:
             - ELASTIC_APM_ENABLED=${ELASTIC_APM_ENABLED}
