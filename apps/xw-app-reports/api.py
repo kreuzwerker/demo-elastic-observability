@@ -6,7 +6,7 @@ import json
 import logger
 import requests
 
-## init ##
+## --- init
 log = logger.getLogger("api")
 elasticapm = make_apm_client({})
 app = FastAPI()
@@ -26,13 +26,28 @@ class PDF(FPDF):
         self.set_font('Arial', 'I', 8)
         self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
 
-    # Save document
     def save(self):
         self.output(self.REPORT_FULLNAME)
         log.info("Report stored in {0}.".format(self.REPORT_FULLNAME))
         return self.REPORT_FULLNAME
 
-##
+## --- requests mapping
+@app.get('/')
+def hello():
+    """Greetings"""
+    return "So long and thanks for all the fish"
+
+@app.get('/report', status_code=200)
+def report():
+    """Create a blank report"""
+    log.debug("Request: GET '/report'")
+    todos = _send_todos_request()
+    report_path = _create_report(todos)
+    log.debug("Report created and stored in {0}.".format(report_path))
+    
+    return FileResponse(report_path)
+
+## ---
 def _send_todos_request():
     resp = requests.get('http://xw-app-todos:5057/todos?showAll=true')
     if resp.status_code == 200:
@@ -57,20 +72,4 @@ def _create_report(todos):
 
     log.debug("Report created. Number of todos: {0}.".format(len(todos)))
     return pdf.save()
-
-## REST Endpoints ##
-@app.get('/')
-def hello():
-    """Greetings"""
-    return "So long and thanks for all the fish"
-
-@app.get('/report', status_code=200)
-def report():
-    """Create a blank report"""
-    log.debug("Request: GET '/report'")
-    todos = _send_todos_request()
-    report_path = _create_report(todos)
-    log.debug("Report created and stored in {0}.".format(report_path))
-    
-    return FileResponse(report_path)
     
