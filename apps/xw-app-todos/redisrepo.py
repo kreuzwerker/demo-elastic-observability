@@ -1,10 +1,12 @@
 import json
 import redis
-import logger, os
+import logger
 
+# --- init
 log = logger.getLogger("redisrepo")
 redis_conn = redis.Redis(host='xw-redis', port=6379, db=0)
 
+# --- cru(d) ops
 def find_by_id(id: str):
     todo = redis_conn.get("todo:{0}".format(id))
     if todo:
