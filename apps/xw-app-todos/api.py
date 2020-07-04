@@ -31,7 +31,7 @@ def get_todos(showAll: bool = False):
 
 @app.get('/todos/{id}', status_code=200)
 def get_todo(id: str):
-    """Get the todo object from Redis"""
+    """Get the todo object from the repo"""
     log.debug("Request: GET '/todos/{0}'".format(id))
     return _find_todo_by_id(id)
 
@@ -47,9 +47,15 @@ def set_as_not_done(id: str):
     log.debug("Request: GET '/todos/{0}/undone'".format(id))
     return _update_todo_status(id, isDone=False)
 
+@app.get('/todos/{id}/delete', status_code=200)
+def set_as_not_done(id: str):
+    """Delete the todo from the repo"""
+    log.debug("Request: GET '/todos/{0}/delete'".format(id))
+    return _delete_todo(id)
+
 @app.post('/todos/', status_code=200)
 def add_todo(todo: Todo):
-    """Store the request body into Redis"""
+    """Store the request body into the repo"""
     log.debug("Request: POST '/todos/' ; Id: {0}".format(todo.id))
     return _save_todo(todo.__dict__)
 
@@ -64,6 +70,12 @@ def _update_todo_status(id: str, isDone: bool):
     todo = _find_todo_by_id(id)
     todo["isDone"] = isDone
     return _save_todo(todo)
+
+def _delete_todo(id: str):
+    resp = repo.delete(id)
+    if not resp:
+        raise HTTPException(status_code=404, detail="Todo with id {0} not found".format(id))
+    return resp
 
 def _save_todo(todo):
     resp = repo.save(todo["id"], todo)

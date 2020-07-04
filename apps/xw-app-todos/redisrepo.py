@@ -27,6 +27,14 @@ def find_all(show_also_completed: bool = False):
     log.info("Fetched a set of {0} todos".format(len(todos)))
     return todos
 
+def delete(id: str):
+    if redis_conn.delete("todo:{0}".format(id)) == 1:
+        log.info("Deleted the todo with id {0}".format(id))
+        return "OK"
+    else:
+        log.warning("Todo with id {0} not found".format(id))
+        return None
+
 def save(id: str, todo):
     if redis_conn.set("todo:{0}".format(id), json.dumps(todo)):
         log.info("Saved the todo with id {0}".format(id))
