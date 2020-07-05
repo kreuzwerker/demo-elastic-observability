@@ -51,10 +51,10 @@ def report():
 def _send_todos_request():
     resp = requests.get('http://xw-app-todos:5057/todos?showAll=true')
     if resp.status_code == 200:
-        log.info("Received the list of todos from the xw-todos app. Status code: 200")
+        log.info("Received the list of todos from xw-app-todos. Status code: 200")
         return json.loads(resp.text)
     else: 
-        log.error("Failed communication with the xw-todos app. Status code: {0}".format(resp.status_code))
+        log.error("Failed communication with xw-app-todos. Status code: {0}".format(resp.status_code))
         return "Error while saving Todo {0}".format(id)
 
 def _create_report(todos):
