@@ -26,37 +26,31 @@ def hello():
 @app.get('/todos/', status_code=200)
 def get_todos(showAll: bool = False):
     """Get all the todos object"""
-    log.debug("Request: GET '/todos/'")
     return repo.find_all(showAll)
 
 @app.get('/todos/{id}', status_code=200)
 def get_todo(id: str):
     """Get the todo object from the repo"""
-    log.debug("Request: GET '/todos/{0}'".format(id))
     return _find_todo_by_id(id)
 
 @app.get('/todos/{id}/done', status_code=200)
 def set_as_done(id: str):
     """Set the requested todo as done"""
-    log.debug("Request: GET '/todos/{0}/done'".format(id))
     return _update_todo_status(id, isDone=True)
 
 @app.get('/todos/{id}/undone', status_code=200)
 def set_as_not_done(id: str):
     """Set the requested todo as not done"""
-    log.debug("Request: GET '/todos/{0}/undone'".format(id))
     return _update_todo_status(id, isDone=False)
 
 @app.get('/todos/{id}/delete', status_code=200)
 def set_as_not_done(id: str):
     """Delete the todo from the repo"""
-    log.debug("Request: GET '/todos/{0}/delete'".format(id))
     return _delete_todo(id)
 
 @app.post('/todos/', status_code=200)
 def add_todo(todo: Todo):
     """Store the request body into the repo"""
-    log.debug("Request: POST '/todos/' ; Id: {0}".format(todo.id))
     return _save_todo(todo.__dict__)
 
 # ---
