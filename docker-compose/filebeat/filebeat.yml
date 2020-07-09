@@ -5,27 +5,43 @@ filebeat.inputs:
 
 processors:
 - add_docker_metadata:
-    host: "unix:///var/run/docker.sock"
 - copy_fields:
     fields:
         - from: container.labels.com_docker_compose_service
-          to: app.name
+          to: service.name
     fail_on_error: false
     ignore_missing: true
 - decode_json_fields:
     fields: ["message"]
     target: "json"
     overwrite_keys: true
+- dissect:
+    tokenizer: '[%{}] %{level} %{logger} - %{message}'
+    field: "message"
+    target_prefix: "log"
+    ignore_failure: true
+    overwrite_keys: true
+- dissect:
+    tokenizer: '%{level}:     %{request.ip}:%{request.port} - "%{message}" %{response.status} %{}'
+    field: "message"
+    target_prefix: "log"
+    ignore_failure: true
+    overwrite_keys: true
 
 output.elasticsearch:
   hosts: ["http://elasticsearch:9200"]
 
 setup.dashboards.enabled: true
-setup.template.enabled: true
+setup.template:
+    enabled: true
+    append_fields:
+    - name: log.request.ip
+      type: keyword
+    - name: log.request.port
+      type: keyword
+    - name: log.response.status
+      type: keyword
+
 setup.kibana.host: "http://kibana:5601"
 
 logging.to_files: false
-
-xpack.monitoring:
-  enabled: true
-  elasticsearch: ~

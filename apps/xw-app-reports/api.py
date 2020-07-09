@@ -40,10 +40,8 @@ def hello():
 @app.get('/report', status_code=200)
 def report():
     """Create a blank report"""
-    log.debug("Request: GET '/report'")
     todos = _send_todos_request()
     report_path = _create_report(todos)
-    log.debug("Report created and stored in {0}.".format(report_path))
     
     return FileResponse(report_path)
 
@@ -51,10 +49,10 @@ def report():
 def _send_todos_request():
     resp = requests.get('http://xw-app-todos:5057/todos?showAll=true')
     if resp.status_code == 200:
-        log.info("Received the list of todos from xw-app-todos. Status code: 200")
+        log.info("Received the list of todos from xw-app-todos")
         return json.loads(resp.text)
     else: 
-        log.error("Failed communication with xw-app-todos. Status code: {0}".format(resp.status_code))
+        log.error("Failed communication with xw-app-todos (status code: {0})".format(resp.status_code))
         return "Error while saving Todo {0}".format(id)
 
 def _create_report(todos):
@@ -70,6 +68,6 @@ def _create_report(todos):
         else:
             pdf.cell(0, 10, "\u2610 {0} (id:{1})".format(todo["description"], todo["id"]), 0, 1)
 
-    log.debug("Report created. Number of todos: {0}.".format(len(todos)))
+    log.debug("Report created. Number of todos: {0}".format(len(todos)))
     return pdf.save()
     
